@@ -1,44 +1,54 @@
 import React, { useState } from 'react';
-import { Text, TextInput, View, Button, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { Text, TextInput, View, Button, StyleSheet, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { login, loginWithGitHub, loginWithGoogle } from '../configs/firebase'; // Thêm hàm loginWithGoogle
+import { login, loginWithGitHub, loginWithGoogle } from '../configs/firebase';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const LoginScreen = ({ navigation }) => {
   const [error, setError] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Thêm state để quản lý loading
 
   // Handle login
   const handleLogin = async (values) => {
+    setIsLoading(true); // Bắt đầu loading
     try {
       await login(values.email, values.password);
       navigation.navigate('Home');
     } catch (error) {
       setError(error.message);
       setModalVisible(true);
+    } finally {
+      setIsLoading(false); // Dừng loading
     }
   };
 
   // Handle GitHub login
   const handleLoginWithGitHub = async () => {
+    setIsLoading(true);
     try {
       await loginWithGitHub();
       navigation.navigate('Home');
     } catch (error) {
       setError(error.message);
       setModalVisible(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle Google login
   const handleLoginWithGoogle = async () => {
+    setIsLoading(true);
     try {
-      await loginWithGoogle(); // Thêm hàm này để đăng nhập bằng Google
+      await loginWithGoogle();
       navigation.navigate('Home');
     } catch (error) {
       setError(error.message);
       setModalVisible(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,7 +68,6 @@ const LoginScreen = ({ navigation }) => {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
           <>
-            {/* Input email */}
             <View style={styles.inputContainer}>
               <Icon name="envelope" size={20} color="#555" style={styles.icon} />
               <TextInput
@@ -72,7 +81,6 @@ const LoginScreen = ({ navigation }) => {
             </View>
             {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
-            {/* Input mật khẩu */}
             <View style={styles.inputContainer}>
               <Icon name="lock" size={20} color="#555" style={styles.icon} />
               <TextInput
@@ -86,10 +94,13 @@ const LoginScreen = ({ navigation }) => {
             </View>
             {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
-            {/* Nút Đăng Nhập */}
-            <Button onPress={handleSubmit} title="Đăng Nhập" color="#007BFF" />
+            {/* Hiển thị nút hoặc ActivityIndicator khi đang loading */}
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#007BFF" />
+            ) : (
+              <Button onPress={handleSubmit} title="Đăng Nhập" color="#007BFF" />
+            )}
 
-            {/* Nút đăng nhập bằng GitHub và Google */}
             <View style={styles.socialButtonsContainer}>
               <TouchableOpacity style={[styles.socialButton, styles.githubButton]} onPress={handleLoginWithGitHub}>
                 <Icon name="github" size={16} color="#fff" />
@@ -102,13 +113,11 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Liên kết để đăng ký */}
             <View style={styles.signupContainer}>
               <Text>Bạn chưa có tài khoản? </Text>
               <Button title="Đăng Ký" onPress={() => navigation.navigate('Signup')} />
             </View>
 
-            {/* Nút Quên Mật Khẩu */}
             <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPassword}>
               <Text style={styles.forgotPasswordText}>Quên Mật Khẩu?</Text>
             </TouchableOpacity>
@@ -116,7 +125,6 @@ const LoginScreen = ({ navigation }) => {
         )}
       </Formik>
 
-      {/* Modal thông báo lỗi */}
       <Modal
         animationType="slide"
         transparent={true}

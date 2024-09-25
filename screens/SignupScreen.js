@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Text, TextInput, View, Button, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../configs/firebase';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Sử dụng FontAwesome cho biểu tượng
 
@@ -13,6 +13,12 @@ const SignupScreen = ({ navigation }) => {
     setLoading(true);
     createUserWithEmailAndPassword(auth, values.email, values.password)
       .then((userCredential) => {
+        // Cập nhật thông tin hồ sơ người dùng với User Name
+        return updateProfile(userCredential.user, {
+          displayName: values.username,
+        });
+      })
+      .then(() => {
         setLoading(false);
         navigation.navigate('Login');
       })
@@ -37,19 +43,32 @@ const SignupScreen = ({ navigation }) => {
   };
 
   const validationSchema = Yup.object().shape({
+    username: Yup.string().required('User Name là bắt buộc'),
     email: Yup.string().email('Email không hợp lệ').required('Email là bắt buộc'),
     password: Yup.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự').required('Mật khẩu là bắt buộc'),
   });
 
   return (
     <Formik
-      initialValues={{ email: '', password: '' }}
+      initialValues={{ username: '', email: '', password: '' }}
       onSubmit={handleSignup}
       validationSchema={validationSchema}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
         <View style={styles.container}>
           <Text style={styles.title}>Đăng Ký</Text>
+
+          <View style={styles.inputContainer}>
+            <Icon name="user" size={20} color="#555" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              onChangeText={handleChange('username')}
+              onBlur={handleBlur('username')}
+              value={values.username}
+              placeholder="Nhập tên người dùng"
+            />
+          </View>
+          {errors.username && <Text style={styles.error}>{errors.username}</Text>}
 
           <View style={styles.inputContainer}>
             <Icon name="envelope" size={20} color="#555" style={styles.icon} />

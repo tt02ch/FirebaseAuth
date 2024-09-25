@@ -1,5 +1,6 @@
-// Import the functions you need from the SDKs you need
+// Import necessary functions from Firebase SDK
 import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 import { initializeAuth, getReactNativePersistence, sendPasswordResetEmail, signInWithEmailAndPassword, onAuthStateChanged, GithubAuthProvider, GoogleAuthProvider } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import * as AuthSession from 'expo-auth-session';
@@ -16,6 +17,9 @@ const firebaseConfig = {
 
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firestore
+const db = getFirestore(app);
 
 // Initialize Firebase Authentication with persistence
 const auth = initializeAuth(app, {
@@ -112,5 +116,5 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Export auth, login, loginWithGitHub, loginWithGoogle, and resetPassword functions
-export { auth, login, loginWithGitHub, loginWithGoogle, resetPassword };
+// Export Firestore and auth functions
+export { db, auth, login, loginWithGitHub, loginWithGoogle, resetPassword };
